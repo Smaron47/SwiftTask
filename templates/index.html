@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift v4 • Enterprise Command Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ==========================================================================
+           1. CSS VARIABLES & THEME SYSTEM
+           ========================================================================== */
+        :root {
+            --bg-body: #f4f7fe; --bg-card: #ffffff; --bg-nav: rgba(255, 255, 255, 0.9); --bg-hover: #f0f2f5;
+            --text-main: #2b3674; --text-muted: #a3aed1; --primary: #4318ff; --primary-hover: #3311db;
+            --secondary: #f4f7fe; --accent: #00b5e2; --success: #01b574; --warning: #ffb547; --danger: #ee5d50;
+            --border: #e2e8f0; --shadow-sm: 0 2px 6px rgba(112, 144, 176, 0.08); --shadow-md: 0 10px 20px rgba(112, 144, 176, 0.12);
+            --shadow-lg: 0 20px 40px rgba(112, 144, 176, 0.15); --radius-sm: 8px; --radius-md: 16px; --radius-lg: 24px;
+            --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0b1437; --bg-card: #111c44; --bg-nav: rgba(17, 28, 68, 0.9); --bg-hover: #1b254b;
+            --text-main: #ffffff; --text-muted: #a3aed1; --primary: #7551ff; --primary-hover: #866cff;
+            --secondary: #1b254b; --accent: #39b8ff; --success: #01b574; --warning: #ffb547; --danger: #ee5d50;
+            --border: #2b3674; --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.2); --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); transition: background-color 0.2s, border-color 0.2s; }
+        body { background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .hidden { display: none !important; }
+        .flex { display: flex; } .flex-col { flex-direction: column; }
+        .items-center { align-items: center; } .justify-between { justify-content: space-between; } .justify-center { justify-content: center; }
+        .gap-2 { gap: 0.5rem; } .gap-3 { gap: 0.75rem; } .gap-4 { gap: 1rem; }
+        .w-full { width: 100%; } .h-full { height: 100%; }
+        .mt-4 { margin-top: 1rem; } .mb-4 { margin-bottom: 1rem; }
+        .text-center { text-align: center; } .text-muted { color: var(--text-muted); } .font-bold { font-weight: 700; }
+
+        .card { background: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 1.5rem; border: 1px solid var(--border); overflow: hidden; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
+        .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.6rem 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: var(--radius-sm); border: none; cursor: pointer; transition: var(--transition); user-select: none; }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(67, 24, 255, 0.3); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-secondary { background: var(--secondary); color: var(--text-main); }
+        .btn-ghost { background: transparent; color: var(--text-muted); }
+        .btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 50%; display: grid; place-items: center; }
+        
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.4rem; }
+        .form-control { width: 100%; padding: 0.75rem 1rem; font-size: 0.95rem; color: var(--text-main); background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67, 24, 255, 0.1); background: var(--bg-card); }
+
+        .badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: 700; border-radius: 20px; text-transform: uppercase; }
+        .badge-priority-critical { background: var(--danger); color: white; }
+        .badge-priority-high { background: var(--warning); color: white; }
+        .badge-priority-medium { background: var(--primary); color: white; }
+        .badge-priority-low { background: var(--text-muted); color: white; }
+        
+        .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--secondary); color: var(--primary); font-weight: 700; border: 2px solid var(--border); object-fit: cover; flex-shrink: 0; }
+        .avatar-sm { width: 32px; height: 32px; font-size: 0.8rem; }
+        .avatar-md { width: 44px; height: 44px; font-size: 1rem; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 1rem; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid var(--border); white-space: nowrap; }
+        td { padding: 1rem; font-size: 0.9rem; color: var(--text-main); border-bottom: 1px solid var(--border); }
+        tbody tr:hover { background: var(--bg-hover); }
+
+        /* ==========================================================================
+           LAYOUT & RESPONSIVENESS
+           ========================================================================== */
+        #app-root { display: flex; height: 100vh; overflow: hidden; position: relative; }
+        
+        .sidebar { width: 280px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 100; transition: transform 0.3s ease; }
+        .sidebar-header { height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; border-bottom: 1px solid var(--border); }
+        .logo { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.75rem; color: var(--text-main); }
+        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-sm); display: grid; place-items: center; color: white; font-size: 1.2rem; }
+        .sidebar-menu { padding: 1.5rem 1rem; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
+        .menu-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 1rem 0 0.5rem 1rem; }
+        .menu-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem; border-radius: var(--radius-sm); color: var(--text-muted); font-weight: 600; cursor: pointer; }
+        .menu-item:hover { background: var(--secondary); color: var(--text-main); }
+        .menu-item.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(67, 24, 255, 0.2); }
+        
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .topbar { height: 80px; background: var(--bg-nav); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; position: sticky; top: 0; z-index: 50; }
+        
+        .mobile-menu-btn { display: none; font-size: 1.5rem; color: var(--text-main); cursor: pointer; margin-right: 1rem; }
+        
+        .content-container { flex: 1; overflow-y: auto; padding: 2rem; }
+        .view-section { display: none; animation: fadeIn 0.4s ease-out forwards; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* DASHBOARD WIDGETS */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .stat-card { display: flex; align-items: center; gap: 1.2rem; }
+        .stat-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 1.5rem; }
+        .stat-details { flex: 1; }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
+        .dashboard-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+
+        /* KANBAN */
+        .kanban-board { display: flex; gap: 1.5rem; height: calc(100vh - 200px); overflow-x: auto; padding-bottom: 1rem; }
+        .kanban-col { background: var(--secondary); border-radius: var(--radius-md); width: 320px; min-width: 320px; display: flex; flex-direction: column; border: 1px solid var(--border); }
+        .kanban-col-header { padding: 1rem; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+        .kanban-count { background: var(--bg-card); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; border: 1px solid var(--border); }
+        .kanban-tasks { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem; min-height: 200px; }
+        .kanban-card { background: var(--bg-card); border-radius: var(--radius-sm); padding: 1rem; border: 1px solid var(--border); box-shadow: var(--shadow-sm); cursor: grab; transition: transform 0.2s, box-shadow 0.2s; position: relative;}
+        .kanban-card:active { cursor: grabbing; transform: scale(0.98); }
+        .kanban-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .kanban-card-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.5rem; line-height: 1.4; }
+        
+        /* REDDIT STYLE FEED */
+        .feed-item { background: var(--bg-card); border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); display: flex; overflow: hidden; box-shadow: var(--shadow-sm); }
+        .vote-sidebar { background: var(--bg-hover); width: 50px; padding: 15px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; border-right: 1px solid var(--border); flex-shrink: 0; }
+        .vote-btn { cursor: pointer; font-size: 1.3rem; color: var(--text-muted); padding: 5px; border-radius: 4px; transition: all 0.2s; }
+        .vote-btn:hover { background: rgba(0,0,0,0.05); }
+        .vote-btn.up:hover { color: var(--success); } 
+        .vote-btn.down:hover { color: var(--danger); }
+        .vote-score { font-weight: 800; font-size: 1rem; color: var(--text-main); }
+        
+        .feed-content { flex: 1; padding: 20px; }
+        .feed-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .feed-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        .feed-body { color: var(--text-main); font-size: 0.95rem; margin-bottom: 15px; }
+        
+        .comment-section { margin-top: 15px; border-left: 2px solid var(--border); padding-left: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .comment-item { background: var(--secondary); padding: 12px; border-radius: 8px; font-size: 0.9rem; }
+        .comment-author { font-weight: 700; color: var(--primary); font-size: 0.8rem; margin-bottom: 4px; }
+        .comment-input-group { display: flex; gap: 10px; margin-top: 10px; }
+        .comment-input-group input { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; background: var(--bg-card); color: var(--text-main); }
+
+        /* AUTH SCREEN */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg-body); z-index: 100000; display: flex; align-items: center; justify-content: center; }
+        .auth-card { width: 100%; max-width: 450px; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border); text-align: center; }
+        .auth-logo { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; display: flex; justify-content: center; gap: 10px; }
+        .role-selector { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 2rem 0; }
+        .role-btn { border: 2px solid var(--border); background: var(--bg-body); padding: 1rem; border-radius: var(--radius-sm); cursor: pointer; font-weight: 700; color: var(--text-muted); }
+        .role-btn.active { border-color: var(--primary); background: rgba(67, 24, 255, 0.05); color: var(--primary); }
+
+        /* MODALS & TOASTS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(11, 20, 55, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-container { background: var(--bg-card); width: 90%; max-width: 500px; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; max-height: 90vh; overflow-y: auto; }
+        .modal-header, .modal-body, .modal-footer { padding: 1.5rem; }
+        .modal-header { border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;}
+        
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 10000; display: flex; flex-direction: column; gap: 0.75rem; }
+        .toast { background: var(--bg-card); padding: 1rem 1.5rem; border-radius: var(--radius-sm); box-shadow: var(--shadow-md); border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 1rem; font-weight: 600; }
+
+        /* MOBILE RESPONSIVE MEDIA QUERIES */
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: block; }
+            .sidebar { position: absolute; left: -280px; height: 100%; box-shadow: var(--shadow-lg); }
+            .sidebar.mobile-open { transform: translateX(280px); }
+            .sidebar-close-btn { display: block !important; cursor: pointer; color: var(--text-muted); font-size: 1.2rem; }
+            .topbar { padding: 0 1rem; height: 70px; }
+            .content-container { padding: 1rem; }
+            .dashboard-layout { grid-template-columns: 1fr; }
+            .page-title { font-size: 1.2rem; }
+            .page-subtitle { display: none; }
+            .kanban-board { padding-bottom: 2rem; }
+            .toast-container { right: 1rem; left: 1rem; bottom: 1rem; }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div class="auth-logo"><i class="fas fa-cube"></i> Swift</div>
+            <p class="text-muted">Enterprise Command Center v4</p>
+            
+            <div class="role-selector">
+                <div class="role-btn active" id="role-admin" onclick="Auth.selectRole('admin')"><i class="fas fa-shield-alt" style="color: var(--danger); display:block; margin-bottom:5px;"></i> Admin</div>
+                <div class="role-btn" id="role-manager" onclick="Auth.selectRole('manager')"><i class="fas fa-briefcase" style="color: var(--warning); display:block; margin-bottom:5px;"></i> Manager</div>
+                <div class="role-btn" id="role-user" onclick="Auth.selectRole('user')"><i class="fas fa-user" style="color: var(--success); display:block; margin-bottom:5px;"></i> User</div>
+            </div>
+
+            <div class="form-group text-left">
+                <label class="form-label">System ID (Username)</label>
+                <input type="text" id="auth-username" class="form-control" placeholder="e.g. jdoe">
+            </div>
+
+            <button class="btn btn-primary w-full" style="padding: 1rem;" onclick="Auth.login()">Authenticate <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <div id="app-root" class="hidden">
+        
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><div class="logo-icon"><i class="fas fa-cube"></i></div> Swift</div>
+                <i class="fas fa-times sidebar-close-btn hidden" onclick="UI.toggleSidebar()"></i>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-label">Main</div>
+                <div class="menu-item active" data-target="dashboard" onclick="Router.navigate('dashboard')"><i class="fas fa-home"></i> Dashboard</div>
+                <div class="menu-item" data-target="kanban" onclick="Router.navigate('kanban')"><i class="fas fa-columns"></i> Kanban Board</div>
+                <div class="menu-item" data-target="feed" onclick="Router.navigate('feed')"><i class="fas fa-stream"></i> Global Feed</div>
+                
+                <div id="nav-admin-section" class="hidden">
+                    <div class="menu-label">Administration</div>
+                    <div class="menu-item" data-target="directory" onclick="Router.navigate('directory')"><i class="fas fa-users-cog"></i> User Control</div>
+                    <div class="menu-item" data-target="logs" onclick="Router.navigate('logs')"><i class="fas fa-clipboard-list"></i> Audit Logs</div>
+                </div>
+            </div>
+            
+            <div style="padding: 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 1rem;">
+                <div class="avatar avatar-md" id="ui-avatar">A</div>
+                <div style="flex:1; overflow:hidden;">
+                    <div style="font-weight:700; font-size:0.95rem;" id="ui-username">Admin User</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); text-transform:capitalize;" id="ui-role">Administrator</div>
+                </div>
+                <button class="btn btn-ghost btn-icon" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </aside>
+
+        <div class="main-wrapper">
+            <header class="topbar">
+                <div class="flex items-center">
+                    <i class="fas fa-bars mobile-menu-btn" onclick="UI.toggleSidebar()"></i>
+                    <div>
+                        <div class="page-title" id="page-title">Dashboard</div>
+                        <div class="page-subtitle" id="page-subtitle" style="font-size:0.85rem; color:var(--text-muted);">Overview of your workspace</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="btn btn-primary" onclick="TaskModal.open()"><i class="fas fa-plus"></i> New Task</button>
+                </div>
+            </header>
+
+            <main class="content-container">
+                
+                <section id="view-dashboard" class="view-section active">
+                    <div class="stat-grid" id="dash-stats">
+                        <div class="text-muted">Loading System Telemetry...</div>
+                    </div>
+
+                    <div class="dashboard-layout">
+                        <div class="card h-full">
+                            <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-line text-primary"></i> Live Activity Metric</h2></div>
+                            <div style="height: 300px; display: grid; place-items: center; border: 1px dashed var(--border); color: var(--text-muted);">
+                                System Sync Completed: API Connection Online
+                            </div>
+                        </div>
+                        <div class="card h-full">
+                            <div class="card-header"><h2 class="card-title"><i class="fas fa-trophy text-warning"></i> Top Operators</h2></div>
+                            <div id="top-performers-list" class="flex flex-col gap-3"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="view-kanban" class="view-section">
+                    <div style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Only Admins or assigned personnel can update task status.
+                    </div>
+                    <div class="kanban-board">
+                        <div class="kanban-col">
+                            <div class="kanban-col-header" style="border-top: 4px solid var(--text-muted);">
+                                <span>TODO</span> <span class="kanban-count" id="kb-count-pending">0</span>
+                            </div>
+                            <div class="kanban-tasks" id="kb-col-pending" data-status="pending" ondragover="Kanban.allowDrop(event)" ondrop="Kanban.drop(event)"></div>
+                        </div>
+                        <div class="kanban-col">
+                            <div class="kanban-col-header" style="border-top: 4px solid var(--primary);">
+                                <span>IN PROGRESS</span> <span class="kanban-count" id="kb-count-inprogress">0</span>
+                            </div>
+                            <div class="kanban-tasks" id="kb-col-inprogress" data-status="inprogress" ondragover="Kanban.allowDrop(event)" ondrop="Kanban.drop(event)"></div>
+                        </div>
+                        <div class="kanban-col">
+                            <div class="kanban-col-header" style="border-top: 4px solid var(--success);">
+                                <span>DONE</span> <span class="kanban-count" id="kb-count-completed">0</span>
+                            </div>
+                            <div class="kanban-tasks" id="kb-col-completed" data-status="completed" ondragover="Kanban.allowDrop(event)" ondrop="Kanban.drop(event)"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="view-feed" class="view-section">
+                    <div id="feed-container">
+                        </div>
+                </section>
+
+                <section id="view-directory" class="view-section">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Personnel Management</h2></div>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead><tr><th>User ID</th><th>Role</th><th>Status</th><th>Rep Score</th><th>Actions</th></tr></thead>
+                                <tbody id="directory-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="view-logs" class="view-section">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">System Audit Logs</h2></div>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead><tr><th>Timestamp</th><th>Actor</th><th>Action</th></tr></thead>
+                                <tbody id="logs-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-task">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="card-title">Create New Directive</h2>
+                <button class="btn btn-ghost btn-icon" onclick="TaskModal.close()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Task Title</label>
+                    <input type="text" id="task-title" class="form-control" placeholder="Enter clear, actionable title">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Detailed Description</label>
+                    <textarea id="task-desc" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="flex gap-4">
+                    <div class="form-group w-full">
+                        <label class="form-label">Priority Level</label>
+                        <select id="task-priority" class="form-control">
+                            <option value="low">Low Priority</option>
+                            <option value="medium" selected>Medium Priority</option>
+                            <option value="high">High Priority</option>
+                            <option value="critical">Critical Severity</option>
+                        </select>
+                    </div>
+                    <div class="form-group w-full" id="assignee-group">
+                        <label class="form-label">Assign To (Admin Only)</label>
+                        <select id="task-assignee" class="form-control">
+                            <option value="">-- Unassigned --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex justify-between">
+                <button class="btn btn-ghost" onclick="TaskModal.close()">Cancel</button>
+                <button class="btn btn-primary" onclick="TaskModal.save()">Deploy Directive</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-user-edit">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="card-title">Edit User Profile</h2>
+                <button class="btn btn-ghost btn-icon" onclick="Admin.closeEditUser()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-group">
+                    <label class="form-label">System Role</label>
+                    <select id="edit-user-role" class="form-control">
+                        <option value="user">User</option>
+                        <option value="manager">Manager</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Account Status</label>
+                    <select id="edit-user-status" class="form-control">
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reputation Score</label>
+                    <input type="number" id="edit-user-rep" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer flex justify-between">
+                <button class="btn btn-ghost" onclick="Admin.closeEditUser()">Cancel</button>
+                <button class="btn btn-primary" onclick="Admin.saveUser()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // ==========================================
+        // API HELPER
+        // ==========================================
+        const API = {
+            async req(endpoint, method = 'GET', body = null) {
+                const options = { method, headers: { 'Content-Type': 'application/json' } };
+                if (body) options.body = JSON.stringify(body);
+                try {
+                    const res = await fetch(endpoint, options);
+                    if (res.status === 401) { Auth.showLogin(); throw new Error("Unauthorized"); }
+                    return await res.json();
+                } catch (e) {
+                    console.error("API Error:", e);
+                    throw e;
+                }
+            }
+        };
+
+        // ==========================================
+        // UI HELPERS
+        // ==========================================
+        const UI = {
+            toast(msg, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const t = document.createElement('div');
+                t.className = `toast`;
+                t.innerHTML = `<span>${msg}</span>`;
+                if(type === 'error') t.style.borderLeftColor = 'var(--danger)';
+                container.appendChild(t);
+                setTimeout(() => t.remove(), 4000);
+            },
+            badge(str, type) {
+                if(type === 'priority') return `<span class="badge badge-priority-${str}">${str}</span>`;
+                if(str === 'active') return `<span class="badge" style="background:var(--success); color:white;">ACTIVE</span>`;
+                if(str === 'suspended') return `<span class="badge" style="background:var(--danger); color:white;">SUSPENDED</span>`;
+                return `<span class="badge" style="background:var(--secondary); border: 1px solid var(--border);">${str}</span>`;
+            },
+            toggleSidebar() {
+                document.getElementById('sidebar').classList.toggle('mobile-open');
+            }
+        };
+
+        // ==========================================
+        // AUTHENTICATION
+        // ==========================================
+        const Auth = {
+            selectedRole: 'admin',
+            currentUser: null,
+            
+            selectRole(role) {
+                this.selectedRole = role;
+                document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(`role-${role}`).classList.add('active');
+            },
+            
+            async check() {
+                try {
+                    const user = await API.req('/api/me');
+                    this.currentUser = user;
+                    this.showApp();
+                } catch (e) { 
+                    this.showLogin(); 
+                }
+            },
+            
+            async login() {
+                const username = document.getElementById('auth-username').value;
+                if (!username) return UI.toast("System ID required", "error");
+                
+                const res = await API.req('/api/login', 'POST', { username, role: this.selectedRole });
+                if (res.success) {
+                    this.currentUser = res.user;
+                    this.showApp();
+                } else if(res.error) {
+                    UI.toast(res.error, "error");
+                }
+            },
+            
+            async logout() {
+                await API.req('/api/logout', 'POST');
+                this.currentUser = null;
+                this.showLogin();
+            },
+
+            showLogin() {
+                document.getElementById('app-root').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
+            },
+
+            showApp() {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-root').classList.remove('hidden');
+                
+                document.getElementById('ui-avatar').innerText = this.currentUser.avatar;
+                document.getElementById('ui-username').innerText = this.currentUser.username;
+                document.getElementById('ui-role').innerText = this.currentUser.role;
+                
+                if (this.currentUser.role === 'admin') {
+                    document.getElementById('nav-admin-section').classList.remove('hidden');
+                } else {
+                    document.getElementById('nav-admin-section').classList.add('hidden');
+                }
+                Router.navigate('dashboard');
+            }
+        };
+
+        // ==========================================
+        // ROUTER & VIEWS
+        // ==========================================
+        const Router = {
+            navigate(view) {
+                // Close sidebar on mobile after navigation
+                document.getElementById('sidebar').classList.remove('mobile-open');
+
+                if(['directory', 'logs'].includes(view) && Auth.currentUser.role !== 'admin') {
+                    return UI.toast('Root clearance required.', 'error');
+                }
+
+                document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+                const menuEl = document.querySelector(`.menu-item[data-target="${view}"]`);
+                if(menuEl) menuEl.classList.add('active');
+
+                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                document.getElementById(`view-${view}`).classList.add('active');
+
+                const titles = {
+                    'dashboard': ['Dashboard', 'System Telemetry'],
+                    'kanban': ['Kanban Board', 'Directive Drag & Drop Matrix'],
+                    'feed': ['Global Feed', 'Live Operator Comm-link'],
+                    'directory': ['User Control', 'Root Personnel Management'],
+                    'logs': ['Audit Logs', 'System Security Events']
+                };
+                document.getElementById('page-title').innerText = titles[view][0];
+                document.getElementById('page-subtitle').innerText = titles[view][1];
+
+                if(view === 'dashboard') Dashboard.render();
+                if(view === 'kanban') Kanban.render();
+                if(view === 'feed') Feed.render();
+                if(view === 'directory') Admin.renderUsers();
+                if(view === 'logs') Admin.renderLogs();
+            }
+        };
+
+        const Dashboard = {
+            async render() {
+                const stats = await API.req('/api/stats');
+                document.getElementById('dash-stats').innerHTML = `
+                    <div class="card stat-card"><div class="stat-icon" style="background:rgba(67,24,255,0.1); color:var(--primary)"><i class="fas fa-server"></i></div><div class="stat-details"><div class="stat-label">Active Tasks</div><div class="stat-value">${stats.active_tasks}</div></div></div>
+                    <div class="card stat-card"><div class="stat-icon" style="background:rgba(1,181,116,0.1); color:var(--success)"><i class="fas fa-users"></i></div><div class="stat-details"><div class="stat-label">Total Users</div><div class="stat-value">${stats.users_count}</div></div></div>
+                    <div class="card stat-card"><div class="stat-icon" style="background:rgba(255,181,71,0.1); color:var(--warning)"><i class="fas fa-bolt"></i></div><div class="stat-details"><div class="stat-label">Completion Rate</div><div class="stat-value">${stats.comp_rate}%</div></div></div>
+                `;
+                
+                document.getElementById('top-performers-list').innerHTML = stats.top_users.map((u, i) => `
+                    <div class="flex items-center gap-3">
+                        <div style="font-weight:800; color:var(--text-muted); width:20px;">#${i+1}</div>
+                        <div class="avatar avatar-sm">${u.avatar}</div>
+                        <div style="flex:1; font-weight:600; font-size:0.9rem;">${u.username}</div>
+                        <div style="font-weight:bold; color:var(--primary);">${u.rep} REP</div>
+                    </div>
+                `).join('');
+            }
+        };
+
+        const Kanban = {
+            async render() {
+                const tasks = await API.req('/api/tasks');
+                
+                const cols = { pending: [], inprogress: [], completed: [] };
+                tasks.forEach(t => { if(cols[t.status]) cols[t.status].push(t); });
+
+                Object.keys(cols).forEach(status => {
+                    const container = document.getElementById(`kb-col-${status}`);
+                    document.getElementById(`kb-count-${status}`).innerText = cols[status].length;
+                    
+                    container.innerHTML = cols[status].map(t => `
+                        <div class="kanban-card" draggable="true" ondragstart="Kanban.drag(event, '${t.id}', '${t.assigneeId}')">
+                            <div class="kanban-card-title">${t.title}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                                ${t.assigneeId ? `<i class="fas fa-user"></i> Assigned to ${t.assigneeId}` : 'Unassigned'}
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                ${UI.badge(t.priority, 'priority')}
+                            </div>
+                        </div>
+                    `).join('');
+                });
+            },
+            drag(ev, id, assigneeId) { 
+                ev.dataTransfer.setData("taskId", id); 
+                ev.dataTransfer.setData("assigneeId", assigneeId); 
+            },
+            allowDrop(ev) { ev.preventDefault(); },
+            async drop(ev) {
+                ev.preventDefault();
+                const taskId = ev.dataTransfer.getData("taskId");
+                const taskAssigneeId = ev.dataTransfer.getData("assigneeId");
+                
+                // PERMISSION CHECK: Only Admin or Assigned User can move the task
+                if (Auth.currentUser.role !== 'admin' && taskAssigneeId !== Auth.currentUser.id && taskAssigneeId !== 'null') {
+                    return UI.toast('Permission Denied. Only the assigned operator or an Admin can move this directive.', 'error');
+                }
+
+                const targetCol = ev.target.closest('.kanban-tasks');
+                if(!targetCol) return;
+                
+                const newStatus = targetCol.getAttribute('data-status');
+                await API.req('/api/tasks', 'PUT', { id: taskId, status: newStatus });
+                UI.toast(`Directive updated to ${newStatus.toUpperCase()}`);
+                this.render();
+            }
+        };
+
+        const Feed = {
+            async render() {
+                const tasks = await API.req('/api/feed');
+                const container = document.getElementById('feed-container');
+                if(!tasks.length) return container.innerHTML = `<div class="card text-center text-muted">Feed offline. Awaiting transmissions.</div>`;
+
+                container.innerHTML = tasks.map(task => `
+                    <div class="feed-item">
+                        <div class="vote-sidebar">
+                            <i class="fas fa-arrow-up vote-btn up" onclick="Feed.vote('${task.id}', 1)"></i>
+                            <span class="vote-score" id="score-${task.id}">${task.score}</span>
+                            <i class="fas fa-arrow-down vote-btn down" onclick="Feed.vote('${task.id}', -1)"></i>
+                        </div>
+                        
+                        <div class="feed-content">
+                            <div class="feed-meta">
+                                <div class="avatar avatar-sm" style="width:24px; height:24px; font-size:10px;">${task.author.substring(0,2).toUpperCase()}</div>
+                                <strong>${task.author}</strong> • Task Broadcast
+                            </div>
+                            <div class="feed-title">${task.title}</div>
+                            <div class="feed-body">${task.desc || 'No additional details provided.'}</div>
+                            
+                            <div class="comment-section">
+                                <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:5px;">
+                                    <i class="fas fa-comments"></i> Responses
+                                </div>
+                                ${task.comments.map(c => `
+                                    <div class="comment-item">
+                                        <div class="comment-author">${c.author}</div>
+                                        <div>${c.content}</div>
+                                    </div>
+                                `).join('')}
+                                
+                                <div class="comment-input-group">
+                                    <input type="text" id="comment-${task.id}" placeholder="Add a comment...">
+                                    <button class="btn btn-primary" onclick="Feed.comment('${task.id}')">Reply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+            async vote(id, val) {
+                const res = await API.req(`/api/feed/${id}/vote`, 'POST', { value: val });
+                document.getElementById(`score-${id}`).innerText = res.new_score;
+            },
+            async comment(id) {
+                const content = document.getElementById(`comment-${id}`).value;
+                if(!content) return;
+                await API.req(`/api/feed/${id}/comment`, 'POST', { content });
+                this.render();
+            }
+        };
+
+        const Admin = {
+            usersData: [],
+            async renderUsers() {
+                this.usersData = await API.req('/api/users');
+                document.getElementById('directory-table-body').innerHTML = this.usersData.map(u => `
+                    <tr>
+                        <td><strong>${u.username}</strong></td>
+                        <td>${UI.badge(u.role)}</td>
+                        <td>${UI.badge(u.status)}</td>
+                        <td>${u.rep} REP</td>
+                        <td><button class="btn btn-secondary" style="padding: 0.3rem 0.8rem; font-size:0.8rem;" onclick="Admin.openEditUser('${u.id}')"><i class="fas fa-edit"></i> Edit</button></td>
+                    </tr>
+                `).join('');
+            },
+            openEditUser(id) {
+                const user = this.usersData.find(u => u.id === id);
+                if(!user) return;
+                document.getElementById('edit-user-id').value = user.id;
+                document.getElementById('edit-user-role').value = user.role;
+                document.getElementById('edit-user-status').value = user.status;
+                document.getElementById('edit-user-rep').value = user.rep;
+                document.getElementById('modal-user-edit').classList.add('active');
+            },
+            closeEditUser() {
+                document.getElementById('modal-user-edit').classList.remove('active');
+            },
+            async saveUser() {
+                const id = document.getElementById('edit-user-id').value;
+                const payload = {
+                    role: document.getElementById('edit-user-role').value,
+                    status: document.getElementById('edit-user-status').value,
+                    rep: parseInt(document.getElementById('edit-user-rep').value)
+                };
+                
+                try {
+                    await API.req(`/api/users/${id}`, 'PUT', payload);
+                    UI.toast('User Profile Updated');
+                    this.closeEditUser();
+                    this.renderUsers(); // Refresh table
+                } catch(e) {
+                    UI.toast('Failed to update user', 'error');
+                }
+            },
+            async renderLogs() {
+                const logs = await API.req('/api/logs');
+                document.getElementById('logs-table-body').innerHTML = logs.map(l => `
+                    <tr>
+                        <td class="text-muted text-sm">${new Date(l.timestamp).toLocaleString()}</td>
+                        <td>${l.actorId}</td>
+                        <td>${l.action}</td>
+                    </tr>
+                `).join('');
+            }
+        };
+
+        const TaskModal = {
+            async open() {
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-desc').value = '';
+                
+                // Only admins can assign tasks to people
+                const assignGroup = document.getElementById('assignee-group');
+                if (Auth.currentUser.role === 'admin') {
+                    assignGroup.classList.remove('hidden');
+                    const users = await API.req('/api/users');
+                    document.getElementById('task-assignee').innerHTML = `<option value="">-- Unassigned --</option>` + 
+                        users.map(u => `<option value="${u.id}">${u.username} (${u.role})</option>`).join('');
+                } else {
+                    assignGroup.classList.add('hidden');
+                }
+
+                document.getElementById('modal-task').classList.add('active');
+            },
+            close() { document.getElementById('modal-task').classList.remove('active'); },
+            async save() {
+                const title = document.getElementById('task-title').value;
+                if(!title) return UI.toast('Title required', 'error');
+                
+                let assigneeId = null;
+                if (Auth.currentUser.role === 'admin') {
+                    const selected = document.getElementById('task-assignee').value;
+                    if(selected) assigneeId = selected;
+                }
+
+                await API.req('/api/tasks', 'POST', {
+                    title: title,
+                    desc: document.getElementById('task-desc').value,
+                    priority: document.getElementById('task-priority').value,
+                    assigneeId: assigneeId
+                });
+                this.close();
+                UI.toast('Directive Deployed');
+                if(document.getElementById('view-kanban').classList.contains('active')) Kanban.render();
+            }
+        };
+
+        // BOOT: Start app by explicitly checking auth on load. 
+        // If not authenticated, the login screen stays on top.
+        window.onload = () => Auth.check();
+
+    </script>
+</body>
+</html>
