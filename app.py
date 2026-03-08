@@ -61,6 +61,41 @@ class Log(db.Model):
     action = db.Column(db.String(200))
     target_id = db.Column(db.String(50), nullable=True)
 
+# Seed demo data if no users exist
+import os
+with app.app_context():
+    db.create_all()
+    if not User.query.first():
+        # Create users
+        admin = User(id="u_admin", username="admin", role="admin", avatar="AD", rep=500)
+        smaron = User(id="u_smaron", username="smaron", role="user", avatar="SM", rep=100)
+        user1 = User(id="u_user1", username="user1", role="user", avatar="U1", rep=50)
+        user2 = User(id="u_user2", username="user2", role="user", avatar="U2", rep=25)
+        
+        db.session.add_all([admin, smaron, user1, user2])
+        
+        # Create tasks
+        task1 = Task(id="t_001", title="Fix login bug", desc="The login API is returning 500 error", priority="high", status="completed", author_id="u_admin", assignee_id="u_smaron")
+        task2 = Task(id="t_002", title="Add user profile page", desc="Create a page to view and edit user profiles", priority="medium", status="inprogress", author_id="u_admin", assignee_id="u_user1")
+        task3 = Task(id="t_003", title="Implement voting system", desc="Allow users to upvote/downvote tasks", priority="low", status="pending", author_id="u_smaron", assignee_id="u_user2")
+        task4 = Task(id="t_004", title="Deploy to production", desc="Set up production deployment with Gunicorn", priority="high", status="pending", author_id="u_admin")
+        
+        db.session.add_all([task1, task2, task3, task4])
+        
+        # Add some comments
+        comment1 = Comment(content="Great work on fixing the bug!", task_id="t_001", user_id="u_admin")
+        comment2 = Comment(content="Started working on the profile page", task_id="t_002", user_id="u_user1")
+        
+        db.session.add_all([comment1, comment2])
+        
+        # Add some votes
+        vote1 = Vote(value=1, task_id="t_001", user_id="u_user1")
+        vote2 = Vote(value=-1, task_id="t_003", user_id="u_admin")
+        
+        db.session.add_all([vote1, vote2])
+        
+        db.session.commit()
+
 # ==========================================
 # HELPER FUNCTIONS
 # ==========================================
@@ -249,10 +284,4 @@ def comment_task(task_id):
 # APP INITIALIZATION
 # ==========================================
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        # Seed Admin if no users exist
-        if not User.query.first():
-            db.session.add(User(id="u_admin", username="admin", role="admin", avatar="AD", rep=500))
-            db.session.commit()
     app.run(debug=True, port=5000)
