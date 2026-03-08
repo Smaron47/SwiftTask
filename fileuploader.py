@@ -36,6 +36,10 @@ run("git add .")
 print("📝 Committing...")
 run(f'git commit -m "{COMMIT_MSG}"')
 
+# ===== RENAME BRANCH TO MAIN =====
+print("🔄 Renaming branch to main...")
+run(f"git branch -M {BRANCH}")
+
 # PUSH এর আগে এইটা থাকবে
 print("🔄 Pulling latest changes...")
 run(f"git pull origin {BRANCH} --rebase")
